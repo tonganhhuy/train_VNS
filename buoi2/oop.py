@@ -9,7 +9,7 @@ def log_action(func):
     return wrapper
 
 class HRDatabase:
-    """Context Manager tùy chỉnh để lưu dữ liệu an toàn, tự động đóng file."""
+    """Context Manager tùy chỉnh để lưu dữ liệu an toàn."""
     def __init__(self, filename: str):
         self.filename = filename
         self.file = None
@@ -32,37 +32,38 @@ class Employee:
         self.base_salary = base_salary
 
     def calculate_salary(self) -> float:
-        """Phương thức đa hình: Tính lương."""
+        """Trả về đúng mức lương nhập vào (không phụ cấp)."""
         return self.base_salary
 
     def __str__(self) -> str:
-        return f"[{self.emp_id}] {self.name} - Lương: {self.calculate_salary():,.0f} VND"
+        # Định dạng lương có dấu phẩy ngăn cách hàng nghìn
+        return f"[{self.emp_id}] {self.name.ljust(15)} - Lương nhận: {self.calculate_salary():,.0f} VND"
 
 class Developer(Employee):
-    """Lớp con kế thừa Employee, đại diện cho Lập trình viên."""
+    """Lớp con kế thừa Employee."""
     def __init__(self, emp_id: str, name: str, base_salary: float, language: str):
-        super().__init__(emp_id, name, base_salary) # Kế thừa thuộc tính lớp cha
+        super().__init__(emp_id, name, base_salary)
         self.language = language
 
     def calculate_salary(self) -> float:
-        """Ghi đè (Override): Dev có thêm phụ cấp kỹ thuật 2,000,000 VND."""
-        return self.base_salary + 2000000
+        """Ghi đè: Chỉ trả về lương cơ bản."""
+        return self.base_salary
 
     def __str__(self) -> str:
-        return super().__str__() + f" (Dev: {self.language})"
+        return super().__str__() + f" | Chức vụ: Dev ({self.language})"
 
 class Manager(Employee):
-    """Lớp con kế thừa Employee, đại diện cho Quản lý."""
+    """Lớp con kế thừa Employee."""
     def __init__(self, emp_id: str, name: str, base_salary: float, team_size: int):
         super().__init__(emp_id, name, base_salary)
         self.team_size = team_size
 
     def calculate_salary(self) -> float:
-        """Ghi đè: Manager có phụ cấp 500,000 VND cho mỗi nhân viên quản lý."""
-        return self.base_salary + (self.team_size * 500000)
+        """Ghi đè: Chỉ trả về lương cơ bản."""
+        return self.base_salary
 
     def __str__(self) -> str:
-        return super().__str__() + f" (Manager - Team: {self.team_size} người)"
+        return super().__str__() + f" | Chức vụ: Manager (Team: {self.team_size})"
 
 class HRSystem:
     def __init__(self):
@@ -74,17 +75,29 @@ class HRSystem:
         print(f"  -> Đã thêm nhân viên: {employee.name}")
 
     @log_action
+    def remove_employee(self, emp_id: str) -> bool:
+        """Tìm và xóa nhân viên theo mã ID."""
+        for i, emp in enumerate(self.employees):
+            if emp.emp_id == emp_id:
+                removed_emp = self.employees.pop(i)
+                print(f"  -> ĐÃ XÓA: {removed_emp.name} (ID: {emp_id})")
+                return True
+        print(f"  -> THẤT BẠI: Không tìm thấy nhân viên có ID '{emp_id}'")
+        return False
+
+    @log_action
     def show_all_employees(self):
-        print("\n--- DANH SÁCH NHÂN VIÊN ---")
+        print("\n" + "-"*65)
+        print(f"{'DANH SÁCH NHÂN VIÊN':^65}")
+        print("-"*65)
         if not self.employees:
-            print("Chưa có nhân viên nào.")
-            return
-        for emp in self.employees:
-            print(emp)
-        print("---------------------------\n")
+            print(f"{'Chưa có dữ liệu nhân viên.':^65}")
+        else:
+            for emp in self.employees:
+                print(emp)
+        print("-"*65 + "\n")
 
     def get_high_earners(self, threshold: float) -> Generator[Employee, None, None]:
-        """Generator trả về từng nhân viên có lương >= threshold, không tốn thêm RAM."""
         for emp in self.employees:
             if emp.calculate_salary() >= threshold:
                 yield emp
@@ -100,74 +113,71 @@ def main_menu():
     hr = HRSystem()
     
     while True:
-        print("\n" + "="*35)
-        print("   HỆ THỐNG QUẢN LÝ NHÂN SỰ")
-        print("="*35)
+        print("\n" + "="*45)
+        print(f"{'HỆ THỐNG QUẢN LÝ NHÂN SỰ':^45}")
+        print("="*45)
         print("1. Thêm Lập trình viên (Developer)")
         print("2. Thêm Quản lý (Manager)")
         print("3. Hiển thị danh sách nhân viên")
         print("4. Lọc nhân viên theo mức lương")
         print("5. Lưu dữ liệu xuống file")
+        print("6. Xóa nhân viên theo ID")
         print("0. Thoát chương trình")
-        print("="*35)
+        print("="*45)
         
-        choice = input("Vui lòng chọn chức năng (0-5): ")
+        choice = input("Vui lòng chọn chức năng (0-6): ")
         
         if choice == '1':
             print("\n--- THÊM LẬP TRÌNH VIÊN ---")
-            emp_id = input("Nhập mã nhân viên: ")
-            name = input("Nhập tên nhân viên: ")
+            emp_id = input("Mã nhân viên: ")
+            name = input("Tên nhân viên: ")
             try:
-                base_salary = float(input("Nhập lương cơ bản (VND): "))
+                base_salary = float(input("Nhập lương nhận (VND): "))
+                language = input("Ngôn ngữ lập trình: ")
+                hr.add_employee(Developer(emp_id, name, base_salary, language))
             except ValueError:
-                print(">> Lỗi: Lương phải là một số hợp lệ. Vui lòng thử lại!")
-                continue
-            language = input("Nhập ngôn ngữ lập trình: ")
-            
-            hr.add_employee(Developer(emp_id, name, base_salary, language))
-            
+                print(">> Lỗi: Lương phải là số!")
+
         elif choice == '2':
             print("\n--- THÊM QUẢN LÝ ---")
-            emp_id = input("Nhập mã nhân viên: ")
-            name = input("Nhập tên nhân viên: ")
+            emp_id = input("Mã nhân viên: ")
+            name = input("Tên nhân viên: ")
             try:
-                base_salary = float(input("Nhập lương cơ bản (VND): "))
-                team_size = int(input("Nhập số nhân viên đang quản lý: "))
+                base_salary = float(input("Nhập lương nhận (VND): "))
+                team_size = int(input("Số nhân viên quản lý: "))
+                hr.add_employee(Manager(emp_id, name, base_salary, team_size))
             except ValueError:
-                print(">> Lỗi: Lương và số nhân viên quản lý phải là số. Vui lòng thử lại!")
-                continue
+                print(">> Lỗi: Dữ liệu nhập vào không hợp lệ!")
                 
-            hr.add_employee(Manager(emp_id, name, base_salary, team_size))
-            
         elif choice == '3':
             hr.show_all_employees()
             
         elif choice == '4':
             try:
-                threshold = float(input("\nNhập mức lương tối thiểu muốn lọc (VND): "))
+                threshold = float(input("\nNhập mức lương tối thiểu (VND): "))
+                print(f"\n--- KẾT QUẢ LỌC (>= {threshold:,.0f} VND) ---")
+                found = False
+                for earner in hr.get_high_earners(threshold):
+                    print(earner)
+                    found = True
+                if not found: print("Không có nhân viên nào.")
             except ValueError:
-                print(">> Lỗi: Mức lương phải là một số hợp lệ!")
-                continue
-                
-            print(f"\n--- NHÂN VIÊN LƯƠNG >= {threshold:,.0f} VND ---")
-            high_earners = hr.get_high_earners(threshold)
-            found = False
-            
-            for earner in high_earners:
-                print(earner)
-                found = True
-                
-            if not found:
-                print("Không có nhân viên nào đạt mức lương này.")
+                print(">> Lỗi: Mức lương phải là số!")
                 
         elif choice == '5':
-            filename = input("\nNhập tên file để lưu (VD: data.txt): ")
+            filename = input("\nTên file lưu trữ: ")
             hr.save_to_database(filename)
+
+        elif choice == '6':
+            print("\n--- XÓA NHÂN VIÊN ---")
+            emp_id_to_delete = input("Nhập mã ID cần xóa: ")
+            hr.remove_employee(emp_id_to_delete)
             
         elif choice == '0':
             print("\nĐã thoát chương trình. Tạm biệt!")
             break
         else:
-            print("\n>> Lựa chọn không hợp lệ, vui lòng nhập số từ 0 đến 5!")
+            print("\n>> Lựa chọn không hợp lệ!")
+
 if __name__ == "__main__":
     main_menu()
