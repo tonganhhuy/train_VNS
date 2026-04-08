@@ -10,7 +10,8 @@ from alembic import context
 load_dotenv()
 
 from src.config.database import Base
-from src.models.domain.post import Post  
+from src.models.domain.post import Post
+from src.models.domain.user import User
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

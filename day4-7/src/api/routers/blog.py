@@ -3,12 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel
 from typing import Optional
-
+from src.deps.auth_deps import get_current_user
 from src.config.database import engine
 from src.models.domain.post import Post
 from sqlalchemy.orm import sessionmaker
 
-router = APIRouter()
+# KHI DÙNG PREFIX: Toàn bộ các API bên dưới sẽ tự động được gắn thêm "/api/v1/articles" ở phía trước
+router = APIRouter(prefix="/articles", tags=["Articles"])
+
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 async def get_db():
@@ -27,7 +29,10 @@ class PostUpdate(BaseModel):
     topic: Optional[str] = None
     is_published: Optional[bool] = None
 
-@router.post("/posts", summary="Tạo bài viết mới", status_code=status.HTTP_201_CREATED)
+
+# --- CÁC HÀM XỬ LÝ (Không cần gõ lại chữ articles nữa) ---
+
+@router.post("/", summary="Create a new article", status_code=status.HTTP_201_CREATED)
 async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
     new_post = Post(
         title=post.title,
@@ -40,15 +45,16 @@ async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
     await db.refresh(new_post)
     return {"message": "Tạo bài viết thành công!", "data": new_post}
 
-@router.get("/posts", summary="Lấy danh sách bài viết")
+
+@router.get("/", summary="Get all articles")
 async def get_all_posts(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Post))
     posts = result.scalars().all()
     return {"message": "Thành công", "total": len(posts), "data": posts}
 
-@router.get("/posts/{post_id}", summary="Lấy chi tiết bài viết")
+
+@router.get("/{post_id}", summary="Get article details")
 async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
- 
     result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalar_one_or_none()
     
@@ -56,7 +62,8 @@ async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Không tìm thấy bài viết này!")
     return {"message": "Thành công", "data": post}
 
-@router.put("/posts/{post_id}", summary="Cập nhật bài viết")
+
+@router.put("/{post_id}", summary="Update an article")
 async def update_post(post_id: int, post_update: PostUpdate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalar_one_or_none()
@@ -70,7 +77,9 @@ async def update_post(post_id: int, post_update: PostUpdate, db: AsyncSession = 
     await db.commit()
     await db.refresh(post)
     return {"message": "Cập nhật thành công!", "data": post}
-@router.delete("/posts/{post_id}", summary="Xóa bài viết")
+
+
+@router.delete("/{post_id}", summary="Delete an article")
 async def delete_post(post_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalar_one_or_none()
