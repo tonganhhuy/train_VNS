@@ -1,0 +1,97 @@
+name: day_8-14
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - ./mysql_init:/docker-entrypoint-initdb.d
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  auth_service:
+    build: ./auth_service
+    ports:
+      - "8001:8000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+    volumes:
+      - ./auth_service:/app
+    command: >
+      sh -c "
+        python -c 'import socket, time; 
+        while True:
+            try:
+                with socket.create_connection((\"db\", 3306), timeout=1): break
+            except: 
+                print(\"Waiting for database...\"); time.sleep(1)'
+        python manage.py migrate
+        python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  inventory_service:
+    build: ./inventory_service
+    ports:
+      - "8002:8000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+    volumes:
+      - ./inventory_service:/app
+    command: >
+      sh -c "
+        python -c 'import socket, time; 
+        while True:
+            try:
+                with socket.create_connection((\"db\", 3306), timeout=1): break
+            except: 
+                print(\"Waiting for database...\"); time.sleep(1)'
+        python manage.py migrate
+        python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  order_service:
+    build: ./order_service
+    ports:
+      - "8003:8000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+    volumes:
+      - ./order_service:/app
+    command: >
+      sh -c "
+        python -c 'import socket, time; 
+        while True:
+            try:
+                with socket.create_connection((\"db\", 3306), timeout=1): break
+            except: 
+                print(\"Waiting for database...\"); time.sleep(1)'
+        python manage.py migrate
+        python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy

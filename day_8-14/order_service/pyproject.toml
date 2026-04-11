@@ -1,0 +1,49 @@
+[project]
+name = "order_service"
+version = "0.1.0"
+description = "Order Service"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "Django==4.2.30",
+    "djangorestframework==3.16.1",
+    "celery==5.6.3",
+    "redis==7.0.1",
+    "djangorestframework-simplejwt==5.5.1",
+    "djoser==2.3.3",
+    "mysqlclient==2.2.4",
+    "drf-yasg==1.21.7",
+]
+
+[tool.uv]
+managed = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.1.0",
+    "pytest-django>=4.11.1",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.15.10",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "PL"]
+ignore = ["PLR0913"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "order_service.settings"
+python_files = ["tests.py", "test_*.py"]
+addopts = "--cov=. --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["*migrations*", "manage.py", "*settings.py", "*wsgi.py", "*asgi.py", "*apps.py", "__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

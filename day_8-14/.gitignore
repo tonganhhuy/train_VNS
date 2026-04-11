@@ -1,0 +1,33 @@
+# Enviroment variables
+.env
+.env.dev
+.env.prod
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.sqlite3
+*.log
+
+# Environments
+.venv
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project Directories
+*/migrations/*
+!*/migrations/__init__.py
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# IDEs
+.idea/
+.vscode/
+*.swp

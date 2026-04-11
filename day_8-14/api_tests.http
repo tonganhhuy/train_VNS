@@ -1,0 +1,113 @@
+### THÔNG TIN CẤU HÌNH VÀ HƯỚNG DẪN 
+# Bạn có thể cài Extension "REST Client" trong VS Code 
+# và ấn nút "Send Request" hiển thị ngay trên mỗi đường link (URL) để test trực tiếp!
+
+@auth_host = http://localhost:8001/api/auth
+@inventory_host = http://localhost:8002/api
+@order_host = http://localhost:8003/api
+
+### =========================================================================
+### 1. AUTH SERVICE (PORT 8001) - HỆ THỐNG XÁC THỰC NGƯỜI DÙNG
+### =========================================================================
+
+### 1A. Đăng ký tài khoản (Register)
+POST {{auth_host}}/users/
+Content-Type: application/json
+
+{
+  "username": "khachhang_test_api",
+  "password": "MatKhauSieuKho123@"
+}
+
+###
+
+### 1B. Đăng nhập lấy Token JWT (Login)
+# Lưu ý: Sẽ trả về thẻ "access" và "refresh". Copy thẻ "access" để dùng nếu cần ủy quyền sau này.
+POST {{auth_host}}/jwt/create/
+Content-Type: application/json
+
+{
+  "username": "khachhang_test_api",
+  "password": "MatKhauSieuKho123@"
+}
+
+###
+ 
+### 1C. Lấy thông tin cá nhân (Get Current User)
+# Lưu ý: Sẽ trả về thông tin user nếu Token hợp lệ
+GET {{auth_host}}/users/me/
+Authorization: Bearer your_access_token_here
+
+### =========================================================================
+### 2. INVENTORY SERVICE (PORT 8002) - HỆ THỐNG KHO HÀNG
+### =========================================================================
+
+### 2A. Lấy danh sách Toàn bộ Hàng hóa đang có (Get Products)
+GET {{inventory_host}}/products/
+
+###
+
+### 2B. Tạo mới 1 Danh mục hàng (Create Category)
+POST {{inventory_host}}/categories/
+Content-Type: application/json
+
+{
+  "name": "Giày Dép",
+  "description": "Thời trang đường phố"
+}
+
+###
+
+### 2C. Tạo mới 1 Sản phẩm (Create Product)
+# (Lưu ý: "category": 1 là ID của danh mục vừa tạo ở trên)
+POST {{inventory_host}}/products/
+Content-Type: application/json
+
+{
+  "category": 1,
+  "name": "Sneaker Nike Air Force 1",
+  "description": "Giày mới về kho nguyên tem",
+  "price": "120.50"
+}
+
+###
+
+### 2D. Cập nhật Số lượng Tồn kho cho mã Sản phẩm ID=1 (Update Stock)
+POST {{inventory_host}}/stocks/
+Content-Type: application/json
+
+{
+  "product": 1,
+  "quantity": 500
+}
+
+
+### =========================================================================
+### 3. ORDER SERVICE (PORT 8003) - HỆ THỐNG ĐƠN HÀNG VÀ THANH TOÁN
+### =========================================================================
+
+### 3A. Lấy Danh sách các Giỏ hàng (Get Carts)
+GET {{order_host}}/carts/
+
+###
+
+### 3B. Yêu cầu tạo mới 1 Giỏ hàng rỗng cho User (Create Cart)
+POST {{order_host}}/carts/
+Content-Type: application/json
+
+{
+  "user_id": 1
+}
+
+###
+
+### 3C. Tạo hóa đơn Đặt hàng và gửi Mail (Chốt Đơn)
+# (Lưu ý: Bạn thử ấn Send Request cục này, và ngó xem Terminal Celery Worker sáng đèn báo Gửi Email)
+POST {{order_host}}/orders/
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "status": "pending",
+  "total_price": "120.50"
+}
