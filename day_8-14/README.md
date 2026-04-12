@@ -2,7 +2,7 @@
 
 Hệ thống E-commerce dựa trên kiến trúc Microservices, được xây dựng bằng Python (Django REST Framework), MySQL, Docker và Celery.
 
-## 🚀 Tổng quan hệ thống
+##  Tổng quan hệ thống
 Hệ thống bao gồm 3 dịch vụ chính hoạt động độc lập:
 *   **Auth Service (8001)**: Quản lý người dùng, đăng ký, đăng nhập và xác thực JWT.
 *   **Inventory Service (8002)**: Quản lý danh mục sản phẩm, thông tin hàng hóa và tồn kho.
@@ -16,7 +16,7 @@ Hệ thống bao gồm 3 dịch vụ chính hoạt động độc lập:
 
 ---
 
-## 🛠️ Hướng dẫn cài đặt và khởi chạy
+##  Hướng dẫn cài đặt và khởi chạy
 
 1. **Clone project và tạo file .env**:
    Sao chép file `.env.example` thành `.env` và cấu hình các thông số cần thiết.
@@ -32,7 +32,7 @@ Hệ thống bao gồm 3 dịch vụ chính hoạt động độc lập:
 
 ---
 
-## 🔒 Cơ chế xác thực (JWT Authentication)
+##  Cơ chế xác thực (JWT Authentication)
 
 Hệ thống sử dụng **JSON Web Token (JWT)** để bảo mật các API.
 
@@ -44,13 +44,13 @@ Hệ thống sử dụng **JSON Web Token (JWT)** để bảo mật các API.
 
 ---
 
-## 📖 Tài liệu API (API Reference)
+##  Tài liệu API (API Reference)
 
 ### 1. Auth Service (Port 8001)
 **Authentication / Users**
 * `POST /api/auth/users/`: Đăng ký tài khoản người dùng mới
 * `POST /api/auth/jwt/create/`: Đăng nhập lấy cặp Token (Access & Refresh)
-* `GET /api/auth/users/me/`: Lấy thông tin tài khoản hiện tại (🔒)
+* `GET /api/auth/users/me/`: Lấy thông tin tài khoản hiện tại 
 * `POST /api/auth/jwt/refresh/`: Làm mới Access Token
 * `POST /api/auth/jwt/verify/`: Kiểm tra tính hợp lệ của Token
 
@@ -61,12 +61,12 @@ Hệ thống sử dụng **JSON Web Token (JWT)** để bảo mật các API.
 ### 2. Inventory Service (Port 8002)
 **Catalog / Products**
 * `GET /api/categories/`: Danh sách danh mục sản phẩm
-* `POST /api/categories/`: Tạo danh mục mới (🔒)
+* `POST /api/categories/`: Tạo danh mục mới
 * `GET /api/products/`: Danh sách toàn bộ sản phẩm (kèm tồn kho)
-* `POST /api/products/`: Tạo sản phẩm mới (🔒)
+* `POST /api/products/`: Tạo sản phẩm mới 
 * `GET /api/products/{id}/`: Chi tiết sản phẩm
-* `PUT /api/products/{id}/`: Cập nhật thông tin sản phẩm (🔒)
-* `DELETE /api/products/{id}/`: Xóa sản phẩm (🔒)
+* `PUT /api/products/{id}/`: Cập nhật thông tin sản phẩm 
+* `DELETE /api/products/{id}/`: Xóa sản phẩm 
 
 **Documentation**
 * Swagger UI: [http://localhost:8002/swagger/](http://localhost:8002/swagger/)
